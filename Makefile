@@ -26,16 +26,17 @@ $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml:
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user
 
-$(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/$(ARCH)/$(BRANCH): \
+$(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/%/$(BRANCH): \
 	$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml \
 	$(REPO)/config
 
 	flatpak-builder \
-		--sandbox --force-clean $(FB_ARGS) --repo=$(REPO) --arch=$(ARCH) \
-		$(BUILDDIR)/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/$(ARCH)/$(BRANCH) $<
+		--sandbox --force-clean $(FB_ARGS) --repo=$(REPO) --arch=$* \
+		$(BUILDDIR)/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/$*/$(BRANCH) $<
 
-$(REPO)/refs/heads/runtime/$(GL32_EXT_ID).nvidia-$(NV_VERSION_F)/x86_64/$(BRANCH):
-	$(MAKE) ARCH=i386 $(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/i386/$(BRANCH)
+$(REPO)/refs/heads/runtime/$(GL32_EXT_ID).nvidia-$(NV_VERSION_F)/x86_64/$(BRANCH): \
+	$(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/i386/$(BRANCH)
+
 	flatpak build-commit-from $(REPO) \
 		--src-ref=runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/i386/$(BRANCH) \
 		runtime/$(GL32_EXT_ID).nvidia-$(NV_VERSION_F)/x86_64/$(BRANCH)
