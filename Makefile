@@ -18,6 +18,7 @@ clean:
 
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml:
 	sed \
+		-e "s/@BRANCH@/$(BRANCH)/g" \
 		-e "s/@NV_VERSION_F@/$(NV_VERSION_F)/g" \
 		-e "s/@NV_VERSION@/$(NV_VERSION)/g" \
 		-e "s/@NV_SHA256@/$(NV_SHA256)/g" \
