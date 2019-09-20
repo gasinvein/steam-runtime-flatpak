@@ -14,7 +14,7 @@ NV_VERSION_F = $(subst .,-,$(NV_VERSION))
 all: bundle
 
 clean:
-	rm -rf $(REPO) *.flatpak *.yml
+	rm -vf *.flatpak *.yml
 
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml:
 	sed \
