@@ -57,7 +57,15 @@ modules:
       - ldconfig -vn ${FLATPAK_DEST}/lib/
       - install -Dm644 nvidia.icd ${FLATPAK_DEST}/OpenCL/vendors/nvidia.icd
       - install -Dm644 10_nvidia.json ${FLATPAK_DEST}/glvnd/egl_vendor.d/10_nvidia.json
-      - sed "s|__NV_VK_ICD__|libGLX_nvidia.so.${NV_VERSION}|" nvidia_icd.json.template > ${FLATPAK_DEST}/vulkan/icd.d/nvidia_icd.json
+      - |
+        if [ -f nvidia_icd.json.template ]; then
+          sed "s|__NV_VK_ICD__|libGLX_nvidia.so.${NV_VERSION}|" nvidia_icd.json.template > \
+            ${FLATPAK_DEST}/vulkan/icd.d/nvidia_icd.json
+        elif [ -f nvidia_icd.json ]; then
+          install -Dm644 nvidia_icd.json -t ${FLATPAK_DEST}/vulkan/icd.d
+        else
+          exit 1
+        fi
     sources:
       - type: file
         dest-filename: NVIDIA.run
