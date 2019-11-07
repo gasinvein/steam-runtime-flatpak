@@ -14,6 +14,8 @@ ARCH ?= x86_64
 BRANCH ?= scout
 
 SRT_SNAPSHOT ?= 0.20191007.0
+SRT_VERSION ?= $(SRT_SNAPSHOT)
+SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
 
 SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-scout/snapshots
 SRT_URI := $(SRT_MIRROR)/$(SRT_SNAPSHOT)
@@ -62,11 +64,17 @@ $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIV
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
 	mkdir -p $(@D)
-	sed "s/@SRT_VERSION@/$(SRT_SNAPSHOT)/g" data/$(SDK_ID).appdata.xml.in > $@
+	sed \
+		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
+		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
+		data/$(SDK_ID).appdata.xml.in > $@
 
 $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: data/$(RUNTIME_ID).appdata.xml.in
 	mkdir -p $(@D)
-	sed "s/@SRT_VERSION@/$(SRT_SNAPSHOT)/g" data/$(RUNTIME_ID).appdata.xml.in > $@
+	sed \
+		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
+		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
+		data/$(RUNTIME_ID).appdata.xml.in > $@
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: \
 	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml

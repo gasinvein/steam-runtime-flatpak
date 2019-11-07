@@ -6,7 +6,7 @@
   <name>Steam Runtime</name>
   <summary>A runtime environment for Steam applications</summary>
   <releases>
-    <release version="@SRT_VERSION@"/>
+    <release version="@SRT_VERSION@" date="@SRT_DATE@"/>
   </releases>
   <description>
     <p>
