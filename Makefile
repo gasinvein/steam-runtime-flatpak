@@ -37,7 +37,7 @@ $(TMPDIR):
 	mkdir -p $(TMPDIR)
 
 $(REPO)/config:
-	ostree --verbose --repo=$(REPO) init --mode=bare-user
+	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
 
 # runtime/SDK archive
 
@@ -61,24 +61,36 @@ $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).ap
 	mkdir -p $(@D)
 	sed "s/@SRT_VERSION@/$(SRT_SNAPSHOT)/g" data/$(RUNTIME_ID).appdata.xml.in > $@
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: \
+	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
+
 	appstream-compose --origin=flatpak \
 		--basename=$(SDK_ID) \
 		--prefix=$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files \
 		$(SDK_ID)
 
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz: $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz: \
+	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml
+
 	appstream-compose --origin=flatpak \
 		--basename=$(RUNTIME_ID) \
 		--prefix=$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files \
 		$(RUNTIME_ID)
 
-$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz
+$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): \
+	$(REPO)/config \
+	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata \
+	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz
+
 	flatpak build-export --files=files --arch=$(ARCH) \
 		$(REPO) $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
 	flatpak build-update-repo --prune $(REPO)
 
-$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz
+$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): \
+	$(REPO)/config \
+	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata \
+	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz
+
 	flatpak build-export --files=files --arch=$(ARCH) \
 		$(REPO) $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
 	flatpak build-update-repo --prune $(REPO)
