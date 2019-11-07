@@ -35,18 +35,14 @@ clean:
 	rm -vf *.flatpak *.yml
 	rm -rf $(BUILDDIR) $(TMPDIR)
 
-$(TMPDIR)/.created:
-	mkdir -p $(@D)
-	touch $@
-
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
 
 # runtime/SDK archive
 
-$(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE): $(TMPDIR)/.created
+$(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE):
+	mkdir -p $(@D)
 	wget $(SRT_URI)/$(@F) -O $@
-	touch $@
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE) data/ld.so.conf
 	mkdir -p $(@D)
