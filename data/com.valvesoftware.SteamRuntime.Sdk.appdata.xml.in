@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="runtime">
+  <id>com.valvesoftware.SteamRuntime.Sdk</id>
+  <metadata_license>CC0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <name>Steam Runtime SDK</name>
+  <summary>A runtime environment for Steam applications - development kit</summary>
+  <releases>
+    <release version="@SRT_VERSION@"/>
+  </releases>
+  <description>
+    <p>
+        A binary compatible runtime environment for Steam applications on Linux.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/ValveSoftware/steam-runtime</url>
+</component>

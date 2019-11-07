@@ -39,27 +39,51 @@ $(TMPDIR):
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user
 
+# runtime/SDK archive
 
 $(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE): $(TMPDIR)
 	wget $(SRT_URI)/$(@F) -O $@
 	touch $@
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH): $(TMPDIR)/$(SDK_ARCHIVE)
-	mkdir -p $@
-	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $@
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE)
+	mkdir -p $(@D)
+	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $(@D)
 
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): $(TMPDIR)/$(RUNTIME_ARCHIVE)
-	mkdir -p $@
-	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $@
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE)
+	mkdir -p $(@D)
+	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $(@D)
 
-$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
+	mkdir -p $(@D)
+	sed "s/@SRT_VERSION@/$(SRT_SNAPSHOT)/g" data/$(SDK_ID).appdata.xml.in > $@
+
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: data/$(RUNTIME_ID).appdata.xml.in
+	mkdir -p $(@D)
+	sed "s/@SRT_VERSION@/$(SRT_SNAPSHOT)/g" data/$(RUNTIME_ID).appdata.xml.in > $@
+
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
+	appstream-compose --origin=flatpak \
+		--basename=$(SDK_ID) \
+		--prefix=$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files \
+		$(SDK_ID)
+
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz: $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml
+	appstream-compose --origin=flatpak \
+		--basename=$(RUNTIME_ID) \
+		--prefix=$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files \
+		$(RUNTIME_ID)
+
+$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz
 	flatpak build-export --files=files --arch=$(ARCH) \
 		$(REPO) $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
+	flatpak build-update-repo --prune $(REPO)
 
-$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)
+$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz
 	flatpak build-export --files=files --arch=$(ARCH) \
 		$(REPO) $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
+	flatpak build-update-repo --prune $(REPO)
 
+# Nvidia GL extension
 
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml:
 	sed \
