@@ -63,14 +63,14 @@ $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xm
 	sed \
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
 		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
-		data/$(SDK_ID).appdata.xml.in > $@
+		$< > $@
 
 $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: data/$(RUNTIME_ID).appdata.xml.in
 	mkdir -p $(@D)
 	sed \
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
 		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
-		data/$(RUNTIME_ID).appdata.xml.in > $@
+		$< > $@
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: \
 	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
@@ -109,14 +109,14 @@ $(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): \
 # Nvidia GL extension
 
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml: \
-	$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml.in
+	$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in
 
 	sed \
 		-e "s/@BRANCH@/$(BRANCH)/g" \
 		-e "s/@NV_VERSION_F@/$(NV_VERSION_F)/g" \
 		-e "s/@NV_VERSION@/$(NV_VERSION)/g" \
 		-e "s/@NV_SHA256@/$(NV_SHA256)/g" \
-		$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in > $@
+		$< > $@
 
 $(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/%/$(BRANCH): \
 	$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml \
