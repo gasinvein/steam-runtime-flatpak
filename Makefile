@@ -33,29 +33,32 @@ clean:
 	rm -vf *.flatpak *.yml
 	rm -rf $(BUILDDIR) $(TMPDIR)
 
-$(TMPDIR):
-	mkdir -p $(TMPDIR)
+$(TMPDIR)/.created:
+	mkdir -p $(@D)
+	touch $@
 
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
 
 # runtime/SDK archive
 
-$(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE): $(TMPDIR)
+$(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE): $(TMPDIR)/.created
 	wget $(SRT_URI)/$(@F) -O $@
 	touch $@
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE)
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE) data/ld.so.conf
 	mkdir -p $(@D)
 	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $(@D)
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
+	touch $@
 
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE)
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE) data/ld.so.conf
 	mkdir -p $(@D)
 	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $(@D)
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
+	touch $@
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
 	mkdir -p $(@D)
@@ -101,7 +104,9 @@ $(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): \
 
 # Nvidia GL extension
 
-$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml:
+$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml: \
+	$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml.in
+
 	sed \
 		-e "s/@BRANCH@/$(BRANCH)/g" \
 		-e "s/@NV_VERSION_F@/$(NV_VERSION_F)/g" \
