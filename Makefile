@@ -48,10 +48,14 @@ $(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE): $(TMPDIR)
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE)
 	mkdir -p $(@D)
 	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $(@D)
+	#FIXME stock ld.so.conf is broken, replace it
+	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 
 $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE)
 	mkdir -p $(@D)
 	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $(@D)
+	#FIXME stock ld.so.conf is broken, replace it
+	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
 	mkdir -p $(@D)
