@@ -13,8 +13,9 @@ TMPDIR ?= tmp
 ARCH ?= x86_64
 BRANCH ?= scout
 
+SRT_SNAPSHOT ?= 0.20191007.0
+
 SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-scout/snapshots
-SRT_SNAPSHOT ?= 0.20190913.0
 SRT_URI := $(SRT_MIRROR)/$(SRT_SNAPSHOT)
 ifeq ($(ARCH),x86_64)
 	FLATDEB_ARCHES := amd64,i386
