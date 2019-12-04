@@ -27,7 +27,11 @@ endif
 SDK_ARCHIVE := $(SDK_ID)-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 RUNTIME_ARCHIVE := $(RUNTIME_ID)-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 
+NV_VERSION ?= $(shell cat /sys/module/nvidia/version)
 NV_VERSION_F = $(subst .,-,$(NV_VERSION))
+#TODO arch here this conditional
+NV_RUNFILE = NVIDIA-Linux-x86_64-$(NV_VERSION).run
+NV_DL_MIRROR = https://download.nvidia.com/XFree86/Linux-x86_64
 
 all: sdk runtime
 
@@ -108,14 +112,22 @@ $(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): \
 
 # Nvidia GL extension
 
+$(TMPDIR)/$(NV_RUNFILE):
+	mkdir -p $(@D)
+	wget $(NV_DL_MIRROR)/$(NV_VERSION)/$(NV_RUNFILE) -O $@
+
+$(TMPDIR)/$(NV_RUNFILE).sha256sum: $(TMPDIR)/$(NV_RUNFILE)
+	sha256sum $< > $@
+
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml: \
-	$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in
+	$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in \
+	$(TMPDIR)/$(NV_RUNFILE).sha256sum
 
 	sed \
 		-e "s/@BRANCH@/$(BRANCH)/g" \
 		-e "s/@NV_VERSION_F@/$(NV_VERSION_F)/g" \
 		-e "s/@NV_VERSION@/$(NV_VERSION)/g" \
-		-e "s/@NV_SHA256@/$(NV_SHA256)/g" \
+		-e "s/@NV_SHA256@/$(shell awk '{ print $$1 }' $(TMPDIR)/$(NV_RUNFILE).sha256sum)/g" \
 		$< > $@
 
 $(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/%/$(BRANCH): \
