@@ -10,7 +10,7 @@ REPO ?= repo
 BUILDDIR ?= builddir
 TMPDIR ?= tmp
 
-ARCH ?= x86_64
+ARCH ?= $(shell flatpak --default-arch)
 BRANCH ?= scout
 
 SRT_SNAPSHOT ?= 0.20191007.0
