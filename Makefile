@@ -13,7 +13,7 @@ TMPDIR ?= tmp
 ARCH ?= $(shell flatpak --default-arch)
 BRANCH ?= scout
 
-SRT_SNAPSHOT ?= 0.20191007.0
+SRT_SNAPSHOT ?= 0.20191024.0
 SRT_VERSION ?= $(SRT_SNAPSHOT)
 SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
 
