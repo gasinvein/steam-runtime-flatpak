@@ -53,6 +53,9 @@ $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE) data/
 	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $(@D)
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
+	#FIXME hackish way to add GL extension vulkan ICD path
+	test -d $(@D)/files/etc/vulkan/icd.d && rmdir $(@D)/files/etc/vulkan/icd.d ||:
+	ln -srv $(@D)/files/lib/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
 	touch $@
 
 $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE) data/ld.so.conf
@@ -60,6 +63,9 @@ $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIV
 	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $(@D)
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
+	#FIXME hackish way to add GL extension vulkan ICD path
+	test -d $(@D)/files/etc/vulkan/icd.d && rmdir $(@D)/files/etc/vulkan/icd.d ||:
+	ln -srv $(@D)/files/lib/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
 	touch $@
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
