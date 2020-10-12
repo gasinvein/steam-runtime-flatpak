@@ -40,7 +40,7 @@ clean:
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
 
-# runtime/SDK archive
+# Download and extract
 
 $(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz:
 	mkdir -p $(@D)
@@ -59,6 +59,8 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 	ln -srv $(@D)/files/lib/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
 	touch $@
 
+# Prepare appstream
+
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
 	mkdir -p $(@D)
 	sed \
@@ -72,6 +74,8 @@ $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).ap
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
 		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
 		$< > $@
+
+# Compose appstream
 
 $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: \
 	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
@@ -88,6 +92,8 @@ $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_
 		--basename=$(RUNTIME_ID) \
 		--prefix=$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files \
 		$(RUNTIME_ID)
+
+# Export to repo
 
 $(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): \
 	$(REPO)/config \
