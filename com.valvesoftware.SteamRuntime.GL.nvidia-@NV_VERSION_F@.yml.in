@@ -1,9 +1,9 @@
 id: com.valvesoftware.SteamRuntime.GL.nvidia-@NV_VERSION_F@
-branch: @BRANCH@
+branch: "@BRANCH@"
 build-extension: true
 sdk: com.valvesoftware.SteamRuntime.Sdk
 runtime: com.valvesoftware.SteamRuntime.Platform
-runtime-version: @BRANCH@
+runtime-version: "@BRANCH@"
 sdk-extensions: []
 build-options:
   strip: true
