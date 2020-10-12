@@ -131,9 +131,13 @@ $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml: \
 
 $(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/%/$(BRANCH): \
 	$(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml \
-	$(REPO)/config
+	$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH) \
+	$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)
+
+	flatpak -v remote-add --if-not-exists --no-gpg-verify --user steamrt-local $(REPO)
 
 	flatpak-builder \
+		--install-deps-from=steamrt-local --user \
 		--sandbox --force-clean $(FB_ARGS) --repo=$(REPO) --arch=$* \
 		$(BUILDDIR)/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/$*/$(BRANCH) $<
 
