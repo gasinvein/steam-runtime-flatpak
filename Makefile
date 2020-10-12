@@ -17,7 +17,7 @@ SRT_SNAPSHOT ?= 0.20191217.0
 SRT_VERSION ?= $(SRT_SNAPSHOT)
 SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
 
-SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-scout/snapshots
+SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-$(BRANCH)/snapshots
 SRT_URI := $(SRT_MIRROR)/$(SRT_SNAPSHOT)
 ifeq ($(ARCH),x86_64)
 	FLATDEB_ARCHES := amd64,i386
