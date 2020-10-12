@@ -24,8 +24,6 @@ ifeq ($(ARCH),x86_64)
 else
 	FLATDEB_ARCHES := $(ARCH)
 endif
-SDK_ARCHIVE := $(SDK_ID)-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
-RUNTIME_ARCHIVE := $(RUNTIME_ID)-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 
 NV_VERSION ?= $(shell cat /sys/module/nvidia/version)
 NV_VERSION_F = $(subst .,-,$(NV_VERSION))
@@ -44,23 +42,16 @@ $(REPO)/config:
 
 # runtime/SDK archive
 
-$(TMPDIR)/$(SDK_ARCHIVE) $(TMPDIR)/$(RUNTIME_ARCHIVE):
+$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz:
 	mkdir -p $(@D)
 	wget $(SRT_URI)/$(@F) -O $@
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(SDK_ARCHIVE) data/ld.so.conf
-	mkdir -p $(@D)
-	tar -xf $(TMPDIR)/$(SDK_ARCHIVE) -C $(@D)
-	#FIXME stock ld.so.conf is broken, replace it
-	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
-	#FIXME hackish way to add GL extension vulkan ICD path
-	test -d $(@D)/files/etc/vulkan/icd.d && rmdir $(@D)/files/etc/vulkan/icd.d ||:
-	ln -srv $(@D)/files/lib/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
-	touch $@
+$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
+	$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz \
+	data/ld.so.conf
 
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata: $(TMPDIR)/$(RUNTIME_ARCHIVE) data/ld.so.conf
 	mkdir -p $(@D)
-	tar -xf $(TMPDIR)/$(RUNTIME_ARCHIVE) -C $(@D)
+	tar -xf $< -C $(@D)
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 	#FIXME hackish way to add GL extension vulkan ICD path
