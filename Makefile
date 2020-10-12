@@ -119,18 +119,14 @@ $(TMPDIR)/$(NV_RUNFILE):
 	mkdir -p $(@D)
 	wget $(NV_DL_MIRROR)/$(NV_VERSION)/$(NV_RUNFILE) -O $@
 
-$(TMPDIR)/$(NV_RUNFILE).sha256sum: $(TMPDIR)/$(NV_RUNFILE)
-	sha256sum $< > $@
-
 $(GL_EXT_ID).nvidia-$(NV_VERSION_F).yml: \
-	$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in \
-	$(TMPDIR)/$(NV_RUNFILE).sha256sum
+	$(GL_EXT_ID).nvidia-@NV_VERSION_F@.yml.in
 
 	sed \
 		-e "s/@BRANCH@/$(BRANCH)/g" \
 		-e "s/@NV_VERSION_F@/$(NV_VERSION_F)/g" \
 		-e "s/@NV_VERSION@/$(NV_VERSION)/g" \
-		-e "s/@NV_SHA256@/$(shell awk '{ print $$1 }' $(TMPDIR)/$(NV_RUNFILE).sha256sum)/g" \
+		-e "s|@NV_RUNFILE_PATH@|$(TMPDIR)/$(NV_RUNFILE)|g" \
 		$< > $@
 
 $(REPO)/refs/heads/runtime/$(GL_EXT_ID).nvidia-$(NV_VERSION_F)/%/$(BRANCH): \

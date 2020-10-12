@@ -69,8 +69,7 @@ modules:
     sources:
       - type: file
         dest-filename: NVIDIA.run
-        url: "https://download.nvidia.com/XFree86/Linux-x86_64/@NV_VERSION@/NVIDIA-Linux-x86_64-@NV_VERSION@.run"
-        sha256: "@NV_SHA256@"
+        path: "@NV_RUNFILE_PATH@"
       - type: shell
         commands:
           - sh NVIDIA.run -x --target nvidia-pkg
