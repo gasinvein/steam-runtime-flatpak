@@ -107,14 +107,20 @@ endif
 
 # Prepare appstream
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: data/$(SDK_ID).appdata.xml.in
+$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: \
+	data/$(SDK_ID).appdata.xml.in \
+	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/.extracted
+
 	mkdir -p $(@D)
 	sed \
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
 		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
 		$< > $@
 
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: data/$(RUNTIME_ID).appdata.xml.in
+$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: \
+	data/$(RUNTIME_ID).appdata.xml.in \
+	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/.extracted
+
 	mkdir -p $(@D)
 	sed \
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
