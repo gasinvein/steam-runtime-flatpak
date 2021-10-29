@@ -13,6 +13,11 @@ BUILDDIR ?= builddir
 TMPDIR ?= tmp
 
 ARCH ?= $(shell flatpak --default-arch)
+ifeq ($(ARCH),x86_64)
+define COMPAT_ARCH
+i386
+endef
+endif
 BRANCH ?= soldier
 
 SRT_SNAPSHOT ?= 0.20211013.0
@@ -44,24 +49,36 @@ $(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz:
 	mkdir -p $(@D)
 	wget $(SRT_URI)/$(@F) -O $@
 
-$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
-	$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz \
-	data/ld.so.conf
+# Extract original tarball
+
+$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/.extracted: \
+	$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 
 	mkdir -p $(@D)
 	tar -xf $< -C $(@D)
 
-	mkdir -p $(@D)/files/lib/{x86_64,i386}-linux-gnu/GL
+	touch $@
+
+# Finilze flatpak
+
+$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
+	$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/.extracted \
+	data/ld.so.conf
+
+	mkdir -p $(@D)/files/lib/$(ARCH)-linux-gnu/GL
+ifdef COMPAT_ARCH
+	mkdir -p $(@D)/files/lib/$(COMPAT_ARCH)-linux-gnu/GL
+endif
 
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 
 	#FIXME hackish way to add GL extension vulkan ICD path
 	test -d $(@D)/files/etc/vulkan/icd.d && rmdir $(@D)/files/etc/vulkan/icd.d ||:
-	ln -srv $(@D)/files/lib/x86_64-linux-gnu/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
+	ln -srv $(@D)/files/lib/$(ARCH)-linux-gnu/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
 
 	flatpak build-finish \
-		--extension="$(GL_EXT_ID)"="directory"="lib/x86_64-linux-gnu/GL" \
+		--extension="$(GL_EXT_ID)"="directory"="lib/$(ARCH)-linux-gnu/GL" \
 		--extension="$(GL_EXT_ID)"="add-ld-path"="lib" \
 		--extension="$(GL_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
 		--extension="$(GL_EXT_ID)"="version"="$(BRANCH)" \
@@ -71,7 +88,11 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 		--extension="$(GL_EXT_ID)"="autodelete"="false" \
 		--extension="$(GL_EXT_ID)"="download-if"="active-gl-driver" \
 		--extension="$(GL_EXT_ID)"="enable-if"="active-gl-driver" \
-		--extension="$(GL32_EXT_ID)"="directory"="lib/i386-linux-gnu/GL" \
+		$(@D)
+
+ifdef COMPAT_ARCH
+	flatpak build-finish \
+		--extension="$(GL32_EXT_ID)"="directory"="lib/$(COMPAT_ARCH)-linux-gnu/GL" \
 		--extension="$(GL32_EXT_ID)"="add-ld-path"="lib" \
 		--extension="$(GL32_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
 		--extension="$(GL32_EXT_ID)"="version"="$(BRANCH)" \
@@ -82,6 +103,7 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 		--extension="$(GL32_EXT_ID)"="download-if"="active-gl-driver" \
 		--extension="$(GL32_EXT_ID)"="enable-if"="active-gl-driver" \
 		$(@D)
+endif
 
 # Prepare appstream
 
