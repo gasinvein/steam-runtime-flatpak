@@ -107,63 +107,45 @@ endif
 
 # Prepare appstream
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml: \
-	data/$(SDK_ID).appdata.xml.in \
-	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/.extracted
+define prepare_appstream
+$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files/share/appdata/$(1).appdata.xml: \
+	data/$(1).appdata.xml.in \
+	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/.extracted
 
-	mkdir -p $(@D)
+	mkdir -p $$(@D)
 	sed \
 		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
 		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
-		$< > $@
-
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml: \
-	data/$(RUNTIME_ID).appdata.xml.in \
-	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/.extracted
-
-	mkdir -p $(@D)
-	sed \
-		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
-		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
-		$< > $@
+		$$< > $$@
+endef
+$(foreach id,$(SDK_ID) $(RUNTIME_ID),$(eval $(call prepare_appstream,$(id))))
 
 # Compose appstream
 
-$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz: \
-	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(SDK_ID).appdata.xml
+define compose_appstream
+$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(1).xml.gz: \
+	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files/share/appdata/$(1).appdata.xml
 
 	appstream-compose --origin=flatpak \
-		--basename=$(SDK_ID) \
-		--prefix=$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files \
-		$(SDK_ID)
-
-$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz: \
-	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/appdata/$(RUNTIME_ID).appdata.xml
-
-	appstream-compose --origin=flatpak \
-		--basename=$(RUNTIME_ID) \
-		--prefix=$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files \
-		$(RUNTIME_ID)
+		--basename=$(1) \
+		--prefix=$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files \
+		$(1)
+endef
+$(foreach id,$(SDK_ID) $(RUNTIME_ID),$(eval $(call compose_appstream,$(id))))
 
 # Export to repo
 
-$(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH): \
+define build_export
+$(REPO)/refs/heads/runtime/$(1)/$(ARCH)/$(BRANCH): \
 	$(REPO)/config \
-	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/metadata \
-	$(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(SDK_ID).xml.gz
+	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/metadata \
+	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(1).xml.gz
 
 	flatpak build-export --files=files --arch=$(ARCH) \
-		$(REPO) $(BUILDDIR)/$(SDK_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
+		$(REPO) $(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH) $(BRANCH)
 	flatpak build-update-repo --prune $(REPO)
-
-$(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH): \
-	$(REPO)/config \
-	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/metadata \
-	$(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)/files/share/app-info/xmls/$(RUNTIME_ID).xml.gz
-
-	flatpak build-export --files=files --arch=$(ARCH) \
-		$(REPO) $(BUILDDIR)/$(RUNTIME_ID)/$(ARCH)/$(BRANCH) $(BRANCH)
-	flatpak build-update-repo --prune $(REPO)
+endef
+$(foreach id,$(SDK_ID) $(RUNTIME_ID),$(eval $(call build_export,$(id))))
 
 
 sdk: $(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH)
