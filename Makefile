@@ -13,9 +13,9 @@ BUILDDIR ?= builddir
 TMPDIR ?= tmp
 
 ARCH ?= $(shell flatpak --default-arch)
-BRANCH ?= scout
+BRANCH ?= soldier
 
-SRT_SNAPSHOT ?= 0.20191217.0
+SRT_SNAPSHOT ?= 0.20211013.0
 SRT_VERSION ?= $(SRT_SNAPSHOT)
 SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
 
