@@ -6,6 +6,7 @@ RUNTIME_ID = $(BASE_ID).Platform
 GL_EXT_ID = org.freedesktop.Platform.GL
 GL32_EXT_ID = $(GL_EXT_ID)32
 GL_COMMON_BRANCH = 1.4
+GL_MERGE_DIRS = vulkan/icd.d;vulkan/explicit_layer.d;vulkan/implicit_layer.d;glvnd/egl_vendor.d;egl/egl_external_platform.d;OpenCL/vendors;lib/dri;lib/d3d;lib/gbm
 
 REPO ?= repo
 BUILDDIR ?= builddir
@@ -62,7 +63,7 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 	flatpak build-finish \
 		--extension="$(GL_EXT_ID)"="directory"="lib/x86_64-linux-gnu/GL" \
 		--extension="$(GL_EXT_ID)"="add-ld-path"="lib" \
-		--extension="$(GL_EXT_ID)"="merge-dirs"="vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors" \
+		--extension="$(GL_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
 		--extension="$(GL_EXT_ID)"="version"="$(BRANCH)" \
 		--extension="$(GL_EXT_ID)"="versions"="$(GL_COMMON_BRANCH);$(BRANCH)" \
 		--extension="$(GL_EXT_ID)"="subdirectories"="true" \
@@ -72,7 +73,7 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 		--extension="$(GL_EXT_ID)"="enable-if"="active-gl-driver" \
 		--extension="$(GL32_EXT_ID)"="directory"="lib/i386-linux-gnu/GL" \
 		--extension="$(GL32_EXT_ID)"="add-ld-path"="lib" \
-		--extension="$(GL32_EXT_ID)"="merge-dirs"="vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors" \
+		--extension="$(GL32_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
 		--extension="$(GL32_EXT_ID)"="version"="$(BRANCH)" \
 		--extension="$(GL32_EXT_ID)"="versions"="$(GL_COMMON_BRANCH);$(BRANCH)" \
 		--extension="$(GL32_EXT_ID)"="subdirectories"="true" \
