@@ -73,9 +73,12 @@ endif
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 
-	#FIXME hackish way to add GL extension vulkan ICD path
-	test -d $(@D)/files/etc/vulkan/icd.d && rmdir $(@D)/files/etc/vulkan/icd.d ||:
-	ln -srv $(@D)/files/lib/$(ARCH)-linux-gnu/GL/vulkan/icd.d $(@D)/files/etc/vulkan/icd.d
+	flatpak build-finish \
+		--env=__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS=/etc/egl/egl_external_platform.d:/usr/lib/$(ARCH)-linux-gnu/GL/egl/egl_external_platform.d:/usr/share/egl/egl_external_platform.d \
+		--env=__EGL_VENDOR_LIBRARY_DIRS=/etc/glvnd/egl_vendor.d:/usr/lib/$(ARCH)-linux-gnu/GL/glvnd/egl_vendor.d:/usr/share/glvnd/egl_vendor.d \
+		--env=LIBGL_DRIVERS_PATH="/usr/lib/$(ARCH)-linux-gnu/GL/lib/dri:/usr/lib/$(ARCH)-linux-gnu/dri" \
+		--env=XDG_DATA_DIRS="/app/share:/usr/lib/$(ARCH)-linux-gnu/GL:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share" \
+		$(@D)
 
 	flatpak build-finish \
 		--extension="$(GL_EXT_ID)"="directory"="lib/$(ARCH)-linux-gnu/GL" \
