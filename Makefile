@@ -21,6 +21,7 @@ endif
 
 BRANCH ?= soldier
 SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-$(BRANCH)/snapshots
+SRT_CHANNEL ?= latest-container-runtime-depot
 
 ifeq ($(ARCH),x86_64)
 	FLATDEB_ARCHES := amd64,i386
@@ -43,7 +44,7 @@ $(REPO)/config:
 
 $(DISTDIR)/$(BRANCH)/VERSION.txt:
 	mkdir -p $(@D)
-	curl -fL $(SRT_MIRROR)/latest-container-runtime-depot/VERSION.txt -o $@
+	curl -fL $(SRT_MIRROR)/$(SRT_CHANNEL)/VERSION.txt -o $@
 
 $(DISTDIR)/$(BRANCH)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz: \
 	$(DISTDIR)/$(BRANCH)/VERSION.txt
