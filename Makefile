@@ -61,14 +61,26 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/.extracted: \
 
 # Finilze flatpak
 
+define gl_ext_finish_args
+--extension="$(1)"="directory"="lib/$(2)-linux-gnu/GL" \
+--extension="$(1)"="add-ld-path"="lib" \
+--extension="$(1)"="merge-dirs"="$(GL_MERGE_DIRS)" \
+--extension="$(1)"="version"="$(BRANCH)" \
+--extension="$(1)"="versions"="$(GL_COMMON_BRANCH);$(BRANCH)" \
+--extension="$(1)"="subdirectories"="true" \
+--extension="$(1)"="no-autodownload"="true" \
+--extension="$(1)"="autodelete"="false" \
+--extension="$(1)"="download-if"="active-gl-driver" \
+--extension="$(1)"="enable-if"="active-gl-driver" \
+
+endef
+
 $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 	$(BUILDDIR)/%/$(ARCH)/$(BRANCH)/.extracted \
 	data/ld.so.conf
 
 	mkdir -p $(@D)/files/lib/$(ARCH)-linux-gnu/GL
-ifdef COMPAT_ARCH
-	mkdir -p $(@D)/files/lib/$(COMPAT_ARCH)-linux-gnu/GL
-endif
+	$(if $(COMPAT_ARCH),mkdir -p $(@D)/files/lib/$(COMPAT_ARCH)-linux-gnu/GL)
 
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
@@ -78,35 +90,9 @@ endif
 		--env=__EGL_VENDOR_LIBRARY_DIRS=/etc/glvnd/egl_vendor.d:/usr/lib/$(ARCH)-linux-gnu/GL/glvnd/egl_vendor.d:/usr/share/glvnd/egl_vendor.d \
 		--env=LIBGL_DRIVERS_PATH="/usr/lib/$(ARCH)-linux-gnu/GL/lib/dri:/usr/lib/$(ARCH)-linux-gnu/dri" \
 		--env=XDG_DATA_DIRS="/app/share:/usr/lib/$(ARCH)-linux-gnu/GL:/usr/share:/usr/share/runtime/share:/run/host/user-share:/run/host/share" \
+		$(call gl_ext_finish_args,$(GL_EXT_ID),$(ARCH)) \
+		$(if $(COMPAT_ARCH),$(call gl_ext_finish_args,$(GL32_EXT_ID),$(COMPAT_ARCH))) \
 		$(@D)
-
-	flatpak build-finish \
-		--extension="$(GL_EXT_ID)"="directory"="lib/$(ARCH)-linux-gnu/GL" \
-		--extension="$(GL_EXT_ID)"="add-ld-path"="lib" \
-		--extension="$(GL_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
-		--extension="$(GL_EXT_ID)"="version"="$(BRANCH)" \
-		--extension="$(GL_EXT_ID)"="versions"="$(GL_COMMON_BRANCH);$(BRANCH)" \
-		--extension="$(GL_EXT_ID)"="subdirectories"="true" \
-		--extension="$(GL_EXT_ID)"="no-autodownload"="true" \
-		--extension="$(GL_EXT_ID)"="autodelete"="false" \
-		--extension="$(GL_EXT_ID)"="download-if"="active-gl-driver" \
-		--extension="$(GL_EXT_ID)"="enable-if"="active-gl-driver" \
-		$(@D)
-
-ifdef COMPAT_ARCH
-	flatpak build-finish \
-		--extension="$(GL32_EXT_ID)"="directory"="lib/$(COMPAT_ARCH)-linux-gnu/GL" \
-		--extension="$(GL32_EXT_ID)"="add-ld-path"="lib" \
-		--extension="$(GL32_EXT_ID)"="merge-dirs"="$(GL_MERGE_DIRS)" \
-		--extension="$(GL32_EXT_ID)"="version"="$(BRANCH)" \
-		--extension="$(GL32_EXT_ID)"="versions"="$(GL_COMMON_BRANCH);$(BRANCH)" \
-		--extension="$(GL32_EXT_ID)"="subdirectories"="true" \
-		--extension="$(GL32_EXT_ID)"="no-autodownload"="true" \
-		--extension="$(GL32_EXT_ID)"="autodelete"="false" \
-		--extension="$(GL32_EXT_ID)"="download-if"="active-gl-driver" \
-		--extension="$(GL32_EXT_ID)"="enable-if"="active-gl-driver" \
-		$(@D)
-endif
 
 # Prepare appstream
 
