@@ -20,7 +20,7 @@ endef
 endif
 BRANCH ?= soldier
 
-SRT_SNAPSHOT ?= 0.20211013.0
+SRT_SNAPSHOT ?= 0.20221017.1
 SRT_VERSION ?= $(SRT_SNAPSHOT)
 SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
 
