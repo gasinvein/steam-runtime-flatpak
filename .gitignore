@@ -1,6 +1,5 @@
 /repo
 /.flatpak-builder
 /builddir
-/tmp
+/dist/*/*.tar.*
 /*.flatpak
-/*.yml

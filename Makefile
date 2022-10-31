@@ -10,7 +10,7 @@ GL_MERGE_DIRS = vulkan/icd.d;vulkan/explicit_layer.d;vulkan/implicit_layer.d;glv
 
 REPO ?= repo
 BUILDDIR ?= builddir
-TMPDIR ?= tmp
+DISTDIR ?= dist
 
 ARCH ?= $(shell flatpak --default-arch)
 ifeq ($(ARCH),x86_64)
@@ -18,14 +18,10 @@ define COMPAT_ARCH
 i386
 endef
 endif
+
 BRANCH ?= soldier
-
-SRT_SNAPSHOT ?= 0.20221017.1
-SRT_VERSION ?= $(SRT_SNAPSHOT)
-SRT_DATE ?= $(shell date -d $(shell cut -d. -f2 <<<$(SRT_VERSION)) +'%Y-%m-%d')
-
 SRT_MIRROR ?= http://repo.steampowered.com/steamrt-images-$(BRANCH)/snapshots
-SRT_URI := $(SRT_MIRROR)/$(SRT_SNAPSHOT)
+
 ifeq ($(ARCH),x86_64)
 	FLATDEB_ARCHES := amd64,i386
 else
@@ -36,23 +32,29 @@ all: sdk runtime
 
 clean:
 	rm -vf *.flatpak *.yml
-	rm -rf $(BUILDDIR) $(TMPDIR)
+	rm -rf $(BUILDDIR) $(DISTDIR)
 
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
 
 # Download and extract
 
-.PRECIOUS: $(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
+.PRECIOUS: $(DISTDIR)/$(BRANCH)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 
-$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz:
+$(DISTDIR)/$(BRANCH)/VERSION.txt:
 	mkdir -p $(@D)
-	wget $(SRT_URI)/$(@F) -O $@
+	wget $(SRT_MIRROR)/latest-container-runtime-depot/VERSION.txt -O $@
+
+$(DISTDIR)/$(BRANCH)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz: \
+	$(DISTDIR)/$(BRANCH)/VERSION.txt
+
+	mkdir -p $(@D)
+	wget $(SRT_MIRROR)/$(shell cat $(<))/$(@F) -O $@
 
 # Extract original tarball
 
 $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/.extracted: \
-	$(TMPDIR)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
+	$(DISTDIR)/$(BRANCH)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz
 
 	mkdir -p $(@D)
 	tar -xf $< -C $(@D)
@@ -104,12 +106,13 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 define prepare_appstream
 $(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/files/share/appdata/$(1).appdata.xml: \
 	data/$(1).appdata.xml.in \
-	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/.extracted
+	$(BUILDDIR)/$(1)/$(ARCH)/$(BRANCH)/.extracted \
+	$(DISTDIR)/$(BRANCH)/VERSION.txt
 
 	mkdir -p $$(@D)
 	sed \
-		-e "s/@SRT_VERSION@/$(SRT_VERSION)/g" \
-		-e "s/@SRT_DATE@/$(SRT_DATE)/g" \
+		-e "s/@SRT_VERSION@/$$(shell cat $$(word 3,$$^))/g" \
+		-e "s/@SRT_DATE@/$$(shell date -d $$$$(cut -d. -f2 < $$(word 3,$$^)) +'%Y-%m-%d')/g" \
 		$$< > $$@
 endef
 $(foreach id,$(SDK_ID) $(RUNTIME_ID),$(eval $(call prepare_appstream,$(id))))
