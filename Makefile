@@ -85,6 +85,11 @@ $(BUILDDIR)/%/$(ARCH)/$(BRANCH)/metadata: \
 	#FIXME stock ld.so.conf is broken, replace it
 	install -Dm644 -v data/ld.so.conf $(@D)/files/etc/ld.so.conf
 
+	#FIXME fix broken dri drivers symlinks
+	for s in $(@D)/files/lib/*-linux-gnu/dri/*_dri.so; do \
+		test -L $$s && ln -sfv $$(basename $$(readlink $$s)) $$s ||:; \
+	done
+
 	flatpak build-finish \
 		--env=__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS=/etc/egl/egl_external_platform.d:/usr/lib/$(ARCH)-linux-gnu/GL/egl/egl_external_platform.d:/usr/share/egl/egl_external_platform.d \
 		--env=__EGL_VENDOR_LIBRARY_DIRS=/etc/glvnd/egl_vendor.d:/usr/lib/$(ARCH)-linux-gnu/GL/glvnd/egl_vendor.d:/usr/share/glvnd/egl_vendor.d \
