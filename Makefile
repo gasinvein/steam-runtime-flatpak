@@ -43,13 +43,13 @@ $(REPO)/config:
 
 $(DISTDIR)/$(BRANCH)/VERSION.txt:
 	mkdir -p $(@D)
-	wget $(SRT_MIRROR)/latest-container-runtime-depot/VERSION.txt -O $@
+	curl -fL $(SRT_MIRROR)/latest-container-runtime-depot/VERSION.txt -o $@
 
 $(DISTDIR)/$(BRANCH)/%-$(FLATDEB_ARCHES)-$(BRANCH)-runtime.tar.gz: \
 	$(DISTDIR)/$(BRANCH)/VERSION.txt
 
 	mkdir -p $(@D)
-	wget $(SRT_MIRROR)/$(shell cat $(<))/$(@F) -O $@
+	curl -fL $(SRT_MIRROR)/$(shell cat $(<))/$(@F) -o $@
 
 # Extract original tarball
 
