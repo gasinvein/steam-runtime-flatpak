@@ -32,8 +32,8 @@ endif
 all: sdk runtime
 
 clean:
-	rm -vf *.flatpak *.yml
-	rm -rf $(BUILDDIR) $(DISTDIR)
+	rm -rvf *.flatpak *.oci *.yml
+	rm -rf $(BUILDDIR) $(DISTDIR)/*/*.tar.*
 
 $(REPO)/config:
 	ostree --verbose --repo=$(REPO) init --mode=bare-user-only
