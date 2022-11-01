@@ -150,6 +150,19 @@ sdk: $(REPO)/refs/heads/runtime/$(SDK_ID)/$(ARCH)/$(BRANCH)
 
 runtime: $(REPO)/refs/heads/runtime/$(RUNTIME_ID)/$(ARCH)/$(BRANCH)
 
+# OCI image
+
+%-$(ARCH)-$(BRANCH).oci/index.json: \
+	$(REPO)/refs/heads/runtime/%/$(ARCH)/$(BRANCH)
+
+	flatpak build-bundle --runtime --oci \
+		--arch=$(ARCH) $(REPO) $(@D) $* $(BRANCH)
+
+sdk-oci-image: $(SDK_ID)-$(ARCH)-$(BRANCH).oci/index.json
+
+runtime-oci-image: $(RUNTIME_ID)-$(ARCH)-$(BRANCH).oci/index.json
+
+# Flatpak bundle
 
 %-$(ARCH)-$(BRANCH).flatpak: \
 	$(REPO)/refs/heads/runtime/%/$(ARCH)/$(BRANCH)

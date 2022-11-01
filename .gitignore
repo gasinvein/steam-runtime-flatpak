@@ -3,3 +3,4 @@
 /builddir
 /dist/*/*.tar.*
 /*.flatpak
+/*.oci
